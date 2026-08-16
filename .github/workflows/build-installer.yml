@@ -22,7 +22,7 @@ jobs:
         shell: bash
         run: |
           npm install
-npx vite build --config vite.demo.config.ts
+          npx vite build --config vite.demo.config.ts
           python -m pip install --upgrade pip
           python -m pip install pyinstaller
           python -m PyInstaller --onefile --name "BrowserRMBG" --add-data "dist-demo:dist-demo" "launcher.py"

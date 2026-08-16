@@ -10,6 +10,7 @@ import { defineConfig } from 'vite';
 import { resolve } from 'path';
 
 export default defineConfig({
+  worker: { format: 'es' },
   root: '.',
   publicDir: 'public',
   build: {

@@ -1,0 +1,53 @@
+name: Build Windows Installer
+on:
+  workflow_dispatch:
+    inputs:
+      publish_release:
+        description: 'Publish to GitHub Release'
+        required: false
+        default: 'false'
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Build application
+        shell: bash
+        run: |
+          npm install
+npx vite build --config vite.demo.config.ts
+          python -m pip install --upgrade pip
+          python -m pip install pyinstaller
+          python -m PyInstaller --onefile --name "BrowserRMBG" --add-data "dist-demo:dist-demo" "launcher.py"
+          cp "dist/BrowserRMBG.exe" "./BrowserRMBG.exe"
+
+      - name: Install NSIS
+        run: choco install nsis -y
+
+      - name: Compile installer
+        shell: bash
+        run: |
+          export PATH="$PATH:/c/Program Files (x86)/NSIS"
+          makensis installer.nsi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: "BrowserRMBG_installer.exe"
+          if-no-files-found: error
+
+      - name: Publish Release
+        if: ${{ github.event.inputs.publish_release == 'true' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          files: "BrowserRMBG_installer.exe"
+          tag_name: installer-build
+          name: Windows Installer Build
